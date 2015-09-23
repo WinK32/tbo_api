@@ -51,7 +51,7 @@ class TBO
         $request = $this->xml->saveXML();
 
         $location = "http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc";
-        $action = "http://TekTravel/HotelBookingApi/DestinationCityList";
+        $action = "http://TekTravel/HotelBookingApi/$action";
         $client = new SoapClient("http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc?wsdl");
         return $client->__doRequest($request, $location, $action, 2);
 
@@ -62,7 +62,7 @@ class TBO
      * @param $function
      * @param $arr_value
      */
-    private function loadXML($function, $arr_value){
+    private function loadXML($function, $arr_value = []){
         $this->xml->loadXML($this->basic($function,$arr_value));
     }
 
@@ -74,17 +74,41 @@ class TBO
 
         $arr_value = ["CountryCode"=>$countryCode];
         $this->loadXML(__FUNCTION__,$arr_value);
-        $xmlRes = $this->xml->getElementsByTagName('City');
-        for($i = 0; $i < $xmlRes->length; $i++) {
+        $xml_res = $this->xml->getElementsByTagName('City');
+        for($i = 0; $i < $xml_res->length; $i++) {
 
-            $output = $xmlRes->item($i)->attributes;
+            $output = $xml_res->item($i)->attributes;
+            $length = $xml_res->item($i)->attributes->length;
 
-            $result[$i][$output->item(0)->name] = $output->item(0)->value;
-            $result[$i][$output->item(1)->name] = $output->item(1)->value;
+            for($j = 0; $j < $length; $j++){
+                $result[$i][$output->item($j)->name] = $output->item($j)->value;
+            }
         }
 
-        return $result;
+        return !empty($result) ? $result : NULL ;
 
+    }
+
+    /**
+     * @return mixed
+     */
+    public function TopDestinations() {
+
+        $this->loadXML(__FUNCTION__);
+        $xml_res = $this->xml->getElementsByTagName('City');
+
+        for($i = 0; $i < $xml_res->length; $i++) {
+
+            $output = $xml_res->item($i)->attributes;
+            $length = $xml_res->item($i)->attributes->length;
+
+            for($j = 0; $j < $length; $j++){
+                $result[$i][$output->item($j)->name] = $output->item($j)->value;
+            }
+
+        }
+
+        return !empty($result) ? $result : NULL ;
     }
 }
 
