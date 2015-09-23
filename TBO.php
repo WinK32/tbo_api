@@ -47,15 +47,20 @@ class TBO
             }
             $xml_bdyreq->appendChild($xml_bdyreqele);
         }
-        foreach ($arr_value as $key => $value ) {
-            ////
-            if(is_array($value['value'])){
-                foreach($value['value'] as $key2 => $value2){
-
+        function recursion($value,$key,$xml_el)
+        {
+            if (is_array($value['value'])) {
+                foreach ($value['value'] as $key2 => $value2) {
+                    //recursion($value,$key,$xml_bdyreq)
                 }
             } else {
-                addXmlElement($xml_bdyreq,$key,$value['value'],$value['attr']);
+                addXmlElement($xml_el, $key, $value['value'], $value['attr']);
             }
+        }
+        foreach ($arr_value as $key => $value ) {
+            ////
+
+            recursion($value,$key,$xml_bdyreq);
             ////
 
         }
