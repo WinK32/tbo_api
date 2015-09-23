@@ -12,7 +12,7 @@ class TBO
      * @param $arr_value
      * @return string
      */
-    private function basic($action,$arr_value)
+    private function loadRequest($action,$arr_value)
     {
         $xml_env = $this->xml->createElement("soap:Envelope");
         $xml_env->setAttribute("xmlns:soap", "http://www.w3.org/2003/05/soap-envelope");
@@ -38,11 +38,28 @@ class TBO
         /*create body*/
         $xml_bdy = $this->xml->createElement("soap:Body");
         $xml_bdyreq = $this->xml->createElement("hot:$action"."Request");
-
-        foreach ($arr_value as $key => $value ) {
+        function addXmlElement($xml_bdyreq,$key,$value,$attr=null){
             $xml_bdyreqele = $this->xml->createElement("hot:$key",$value);
+            if($attr){
+                foreach($attr as $k => $v){
+                    $xml_bdyreqele->setAttribute($k,$v);
+                }
+            }
             $xml_bdyreq->appendChild($xml_bdyreqele);
         }
+        foreach ($arr_value as $key => $value ) {
+            ////
+            if(is_array($value['value'])){
+                foreach($value['value'] as $key2 => $value2){
+
+                }
+            } else {
+                addXmlElement($xml_bdyreq,$key,$value['value'],$value['attr']);
+            }
+            ////
+
+        }
+
 
         $xml_bdy->appendChild($xml_bdyreq);
         $xml_env->appendChild($xml_bdy);
@@ -51,7 +68,7 @@ class TBO
         $request = $this->xml->saveXML();
 
         $location = "http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc";
-        $action = "http://TekTravel/HotelBookingApi/DestinationCityList";
+        $action = "http://TekTravel/HotelBookingApi/$action";
         $client = new SoapClient("http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc?wsdl");
         return $client->__doRequest($request, $location, $action, 2);
 
@@ -62,22 +79,21 @@ class TBO
      * @param $function
      * @param $arr_value
      */
-    private function loadXML($function, $arr_value){
-        $this->xml->loadXML($this->basic($function,$arr_value));
+    private function loadXML($function, $arr_value = []){
+        $this->xml->loadXML($this->loadRequest($function,$arr_value));
     }
 
+
     /**
-     * @param $countryCode
+     * @param $arg
      * @return mixed
      */
-    public function DestinationCityList($countryCode){
+    public function  DestinationCityList($arg){
+        $this->loadXML(__FUNCTION__,$arg);
+        $xml_res = $this->xml->getElementsByTagName('City');
+        for($i = 0; $i < $xml_res->length; $i++) {
 
-        $arr_value = ["CountryCode"=>$countryCode];
-        $this->loadXML(__FUNCTION__,$arr_value);
-        $xmlRes = $this->xml->getElementsByTagName('City');
-        for($i = 0; $i < $xmlRes->length; $i++) {
-
-            $output = $xmlRes->item($i)->attributes;
+            $output = $xml_res->item($i)->attributes;
 
             $result[$i][$output->item(0)->name] = $output->item(0)->value;
             $result[$i][$output->item(1)->name] = $output->item(1)->value;
@@ -86,9 +102,11 @@ class TBO
         return $result;
 
     }
+
 }
-
-
+$new = new TBO();
+$inp_arr = ["CountryCode"=>["value"=>"AE"]];
+print_r($new->DestinationCityList($inp_arr));
 
 
 
