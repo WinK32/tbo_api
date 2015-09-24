@@ -108,9 +108,7 @@ class TBO
     }
 
 }
-$new = new TBO();
-$inp_arr = ["CountryCode"=>["value"=>"AE"]];
-print_r($new->DestinationCityList($inp_arr));
+
 
 
 
