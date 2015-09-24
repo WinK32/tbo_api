@@ -7,11 +7,7 @@ class TBO
         $this->xml = new DOMDocument("1.0", "UTF-8");
     }
 
-    /**
-     * @param $key
-     * @param $value
-     * @param $xml_elem
-     */
+
     private function recursion($key,$value,&$xml_elem)
     {
         $attr = (isset($value['attr'])) ? $value['attr'] : null;
@@ -36,12 +32,6 @@ class TBO
             $xml_elem->appendChild($xml_bdyreqele);
         }
     }
-
-    /**
-     * @param $action
-     * @param $arr_value
-     * @return string
-     */
     private function loadRequest($action,$arr_value)
     {
         $xml_env = $this->xml->createElement("soap:Envelope");
@@ -89,36 +79,52 @@ class TBO
 
     }
 
-    /**
-     * @param $function
-     * @param $arr_value
-     */
-    private function loadXML($function, $arr_value = []){
+
+    private function loadXML($function, $arr_value){
         $this->xml->loadXML($this->loadRequest($function,$arr_value));
     }
 
-
-    /**
-     * @param $arg
-     * @return mixed
-     */
-    public function  DestinationCityList($arg){
-        $this->loadXML(__FUNCTION__,$arg);
-        $xml_res = $this->xml->getElementsByTagName('City');
+    private function templateMethod($function,$tag_name,$arg=[]){
+        $this->loadXML($function,$arg);
+        $xml_res = $this->xml->getElementsByTagName($tag_name);
         for($i = 0; $i < $xml_res->length; $i++) {
 
             $output = $xml_res->item($i)->attributes;
 
-            $result[$i][$output->item(0)->name] = $output->item(0)->value;
-            $result[$i][$output->item(1)->name] = $output->item(1)->value;
+            for($k = 0; $k < $output->length; $k++){
+                $result[$i][$output->item($k)->name] = $output->item($k)->value;
+            }
         }
-
         return $result;
-
     }
 
-}
 
+    public function  DestinationCityList($arg){
+        return $this->templateMethod(__FUNCTION__,'City',$arg);
+    }
+    public function  TopDestinations(){
+        return $this->templateMethod(__FUNCTION__,'City');
+    }
+    public function  CountryList(){
+        return $this->templateMethod(__FUNCTION__,'Country');
+    }
+
+    /**
+     * @return mixed
+     * Attention!!!!!!!!!!!!
+     */
+    public function  HotelCodeList(){
+        return $this->templateMethod(__FUNCTION__,'Hotel');
+    }
+
+
+}
+$new = new TBO();
+$inp_arr = ["CountryCode"=>["value"=>["value"=>'AE',"attr"=>["vu"=>'ddd']]]];
+//print_r($new->DestinationCityList($inp_arr));
+//print_r($new->TopDestinations());
+print_r($new->CountryList());
+///****************print_r($new->HotelCodeList());
 
 
 
