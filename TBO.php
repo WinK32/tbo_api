@@ -7,7 +7,11 @@ class TBO
         $this->xml = new DOMDocument("1.0", "UTF-8");
     }
 
-
+    /**
+     * @param $key
+     * @param $value
+     * @param $xml_elem
+     */
     private function recursion($key,$value,&$xml_elem)
     {
         $attr = (isset($value['attr'])) ? $value['attr'] : null;
@@ -32,6 +36,12 @@ class TBO
             $xml_elem->appendChild($xml_bdyreqele);
         }
     }
+
+    /**
+     * @param $action
+     * @param $arr_value
+     * @return string
+     */
     private function loadRequest($action,$arr_value)
     {
         $xml_env = $this->xml->createElement("soap:Envelope");
