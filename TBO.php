@@ -7,11 +7,31 @@ class TBO
         $this->xml = new DOMDocument("1.0", "UTF-8");
     }
 
-    /**
-     * @param $action
-     * @param $arr_value
-     * @return string
-     */
+
+    private function recursion($key,$value,&$xml_elem)
+    {
+        $attr = (isset($value['attr'])) ? $value['attr'] : null;
+        if (is_array($value['value'])) {
+            $xml_bdyreqele = $this->xml->createElement("hot:$key", $value['value']);
+            if ($attr) {
+                foreach ($attr as $k => $v) {
+                    $xml_bdyreqele->setAttribute($k, $v);
+                }
+            }
+            foreach ($value['value'] as $key2 => $value2) {
+                $this->recursion($key2,$value2,$xml_bdyreqele);
+            }
+            $xml_elem->appendChild($xml_bdyreqele);
+        } else {
+            $xml_bdyreqele = $this->xml->createElement("hot:$key", $value['value']);
+            if ($attr) {
+                foreach ($attr as $k => $v) {
+                    $xml_bdyreqele->setAttribute($k, $v);
+                }
+            }
+            $xml_elem->appendChild($xml_bdyreqele);
+        }
+    }
     private function loadRequest($action,$arr_value)
     {
         $xml_env = $this->xml->createElement("soap:Envelope");
@@ -37,32 +57,11 @@ class TBO
 
         /*create body*/
         $xml_bdy = $this->xml->createElement("soap:Body");
-        $xml_bdyreq = $this->xml->createElement("hot:$action"."Request");
-        function addXmlElement($xml_bdyreq,$key,$value,$attr=null){
-            $xml_bdyreqele = $this->xml->createElement("hot:$key",$value);
-            if($attr){
-                foreach($attr as $k => $v){
-                    $xml_bdyreqele->setAttribute($k,$v);
-                }
-            }
-            $xml_bdyreq->appendChild($xml_bdyreqele);
-        }
-        function recursion($value,$key,$xml_el)
-        {
-            if (is_array($value['value'])) {
-                foreach ($value['value'] as $key2 => $value2) {
-                    //recursion($value,$key,$xml_bdyreq)
-                }
-            } else {
-                addXmlElement($xml_el, $key, $value['value'], $value['attr']);
-            }
-        }
+        $xml_bdyreq= $this->xml->createElement("hot:$action"."Request");
+
+
         foreach ($arr_value as $key => $value ) {
-            ////
-
-            recursion($value,$key,$xml_bdyreq);
-            ////
-
+            $this->recursion($key,$value,$xml_bdyreq);
         }
 
 
