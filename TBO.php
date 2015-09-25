@@ -3,11 +3,10 @@
 class TBO
 {
     private $xml;
+    private $result;
     public function __construct(){
         $this->xml = new DOMDocument("1.0", "UTF-8");
     }
-
-
     private function recursion($key,$value,&$xml_elem)
     {
         $attr = (isset($value['attr'])) ? $value['attr'] : null;
@@ -71,108 +70,131 @@ class TBO
 
         $this->xml->appendChild($xml_env);
         $request = $this->xml->saveXML();
+        //print_r($request);
+
         $location = "http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc";
         $action = "http://TekTravel/HotelBookingApi/$action";
         $client = new SoapClient("http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc?wsdl");
-        return $client->__doRequest($request, $location, $action, 2);
+        ///
+        $this->result = $client->__doRequest($request, $location, $action, 2);
+        ///
+        return $this->result;
 
 
     }
 
-    private function templateMethod($function,$tag_name,$arg=[]){
-        $this->xml->loadXML($this->loadRequest($function,$arg));
-        $xml_res = $this->xml->getElementsByTagName($tag_name);
-        for($i = 0; $i < $xml_res->length; $i++) {
-            $output = $xml_res->item($i)->attributes;
-            for($k = 0; $k < $output->length; $k++){
-                $result[$i][$output->item($k)->name] = $output->item($k)->value;
+    private function xmlstr_to_array($xmlstr) {
+        $doc = new DOMDocument();
+        $doc->loadXML($xmlstr);
+        return $this->domnode_to_array($doc->documentElement);
+    }
+    private function domnode_to_array($node) {
+        $output = array();
+        switch ($node->nodeType) {
+            case XML_CDATA_SECTION_NODE:
+            case XML_TEXT_NODE:
+                $output = trim($node->textContent);
+                break;
+            case XML_ELEMENT_NODE:
+                for ($i=0, $m=$node->childNodes->length; $i<$m; $i++) {
+                    $child = $node->childNodes->item($i);
+                    $v = $this->domnode_to_array($child);
+                    if(isset($child->tagName)) {
+                        $t = $child->tagName;
+                        if(!isset($output[$t])) {
+                            $output[$t] = array();
+                        }
+                        $output[$t][] = $v;
+                    }
+                    elseif($v) {
+                        $output = (string) $v;
+                    }
+                }
+                if(is_array($output)) {
+                    if($node->attributes->length) {
+                        $a = array();
+                        foreach($node->attributes as $attrName => $attrNode) {
+                            $a[$attrName] = (string) $attrNode->value;
+                        }
+                        $output['@attributes'] = $a;
+                    }
+                    foreach ($output as $t => $v) {
+                        if(is_array($v) && count($v)==1 && $t!='@attributes') {
+                            $output[$t] = $v[0];
+                        }
+                    }
+                }
+                break;
+        }
+        return $output;
+    }
+
+    private function array_key_search($array,$key){
+
+        foreach($array as $k => $v){
+            if($k == $key){
+                $this->result = $array[$k];
+                break;
+            } else {
+                if(is_array($v)){
+                    $this->array_key_search($v,$key);
+                }
             }
         }
-        return $result;
+
     }
 
-
+    private function responseTemplate($function,$arg=[]){
+        $this->array_key_search($this->xmlstr_to_array($this->loadRequest($function,$arg)),$function.'Response');
+    }
     public function  DestinationCityList($arg){
-        return $this->templateMethod(__FUNCTION__,'City',$arg);
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
     }
     public function  TopDestinations(){
-        return $this->templateMethod(__FUNCTION__,'City');
+        $this->responseTemplate(__FUNCTION__);
+        return $this->result;
     }
     public function  CountryList(){
-        return $this->templateMethod(__FUNCTION__,'Country');
-    }
-
-    /**
-     * @return mixed
-     * Attention!!!!!!!!!!!!
-     */
-    public function  HotelCodeList(){
-        return $this->templateMethod(__FUNCTION__,'Hotel');
+        $this->responseTemplate(__FUNCTION__);
+        return $this->result;
     }
     public function  HotelSearch($arg){
-       return($this->loadRequest(__FUNCTION__,$arg));
-
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  HotelRoomAvailability($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  AvailabilityAndPricing($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  HotelBook($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  GenerateInvoice($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  Amendment($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  HotelCancel($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
+    }
+    public function  HotelDetails($arg){
+        $this->responseTemplate(__FUNCTION__,$arg);
+        return $this->result;
     }
 
 
 }
-$new = new TBO();
-//$inp_arr = ["CountryCode"=>["value"=>["value"=>'AE',"attr"=>["vu"=>'ddd']]]];
-//print_r($new->DestinationCityList($inp_arr));
-//print_r($new->TopDestinations());
-//print_r($new->CountryList());
-///****************print_r($new->HotelCodeList());
-$inp_arr = [
-    "CheckInDate"=>[
-        "value"=>"2015-10-25T00:00:00.000+05:00"
-    ],
-    "CheckOutDate"=>[
-        "value"=>"2015-10-26T00:00:00.000+05:00"
-    ],
-    "CountryName"=>[
-        "value"=>"United Arab Emirates"
-    ],
-    "CityName"=>[
-        "value"=>"Dubai"
-    ],
-    "CityId"=>[
-        "value"=>"25921"
-    ],
-    "IsNearBySearchAllowed"=>[
-        "value"=>'false'
-    ],
-    "NoOfRooms"=>[
-        "value"=>1
-    ],
-    "GuestNationality"=>[
-        "value"=>"IN"
-    ],
-    "RoomGuests"=>[
-        "value"=>[
-            "RoomGuest"=>[
-                "attr"=>[
-                    "AdultCount"=>1,
-                    "ChildCount"=> 0
-                ]
-            ]
-        ]
-    ],
-    "ResultCount" => [
-        "value" => 0
-    ],
-    "Filters" => [
-        "value" => [
-            "StarRating" =>[
-                "value"=>"All"
-            ],
-            "OrderBy" =>[
-                "value"=>"PriceAsc"
-            ]
-        ]
-    ]
-];
 
-print_r($new->HotelSearch($inp_arr));
 
 
 
