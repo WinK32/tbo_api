@@ -2,20 +2,26 @@
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:hot="http://TekTravel/HotelBookingApi">
     <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
         <hot:Credentials UserName="behtarin" Password="beht@123"/>
-        <wsa:Action>http://TekTravel/HotelBookingApi/CountryList</wsa:Action>
+        <wsa:Action>http://TekTravel/HotelBookingApi/HotelSearch</wsa:Action>
         <wsa:To>http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc</wsa:To>
     </soap:Header>
     <soap:Body>
-        <hot:CountryListRequest/>
+        <hot:HotelSearchRequest>
+            <hot:CheckInDate>2014-04-25T00:00:00.000+05:00</hot:CheckInDate>
+            <hot:CheckOutDate>2014-04-25T00:00:00.000+05:00</hot:CheckOutDate>
+            <hot:CityName>Dubai</hot:CityName>
+            <hot:CityId>25921</hot:CityId>
+            <hot:IsNearBySearchAllowed/>
+            <hot:NoOfRooms>1</hot:NoOfRooms>
+            <hot:GuestNationality>IN</hot:GuestNationality>
+            <hot:RoomGuests>
+                <hot:RoomGuest AdultCount="1" ChildCount="0"/>
+            </hot:RoomGuests>
+            <hot:ResultCount>0</hot:ResultCount>
+            <hot:Filters>
+                <hot:StarRating>All</hot:StarRating>
+                <hot:OrderBy>PriceAsc</hot:OrderBy>
+            </hot:Filters>
+        </hot:HotelSearchRequest>
     </soap:Body>
-</soap:Envelope>
-
-<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:hot="http://TekTravel/HotelBookingApi">
-<soap:Header>
-    <hot:Credentials UserName="testuser" Password="testpwd">
-    </hot:Credentials>
-</soap:Header>
-<soap:Body>
-    <hot:CountryListRequest/>
-</soap:Body>
 </soap:Envelope>

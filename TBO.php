@@ -11,8 +11,9 @@ class TBO
     private function recursion($key,$value,&$xml_elem)
     {
         $attr = (isset($value['attr'])) ? $value['attr'] : null;
+        $value['value'] = (isset($value['value'])) ? $value['value'] : '';
         if (is_array($value['value'])) {
-            $xml_bdyreqele = $this->xml->createElement("hot:$key", $value['value']);
+            $xml_bdyreqele = $this->xml->createElement("hot:$key");
             if ($attr) {
                 foreach ($attr as $k => $v) {
                     $xml_bdyreqele->setAttribute($k, $v);
@@ -70,7 +71,6 @@ class TBO
 
         $this->xml->appendChild($xml_env);
         $request = $this->xml->saveXML();
-
         $location = "http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc";
         $action = "http://TekTravel/HotelBookingApi/$action";
         $client = new SoapClient("http://api.tbotechnology.in/hotelapi_v7/hotelservice.svc?wsdl");
@@ -79,18 +79,11 @@ class TBO
 
     }
 
-
-    private function loadXML($function, $arr_value){
-        $this->xml->loadXML($this->loadRequest($function,$arr_value));
-    }
-
     private function templateMethod($function,$tag_name,$arg=[]){
-        $this->loadXML($function,$arg);
+        $this->xml->loadXML($this->loadRequest($function,$arg));
         $xml_res = $this->xml->getElementsByTagName($tag_name);
         for($i = 0; $i < $xml_res->length; $i++) {
-
             $output = $xml_res->item($i)->attributes;
-
             for($k = 0; $k < $output->length; $k++){
                 $result[$i][$output->item($k)->name] = $output->item($k)->value;
             }
@@ -116,17 +109,70 @@ class TBO
     public function  HotelCodeList(){
         return $this->templateMethod(__FUNCTION__,'Hotel');
     }
+    public function  HotelSearch($arg){
+       return($this->loadRequest(__FUNCTION__,$arg));
+
+    }
 
 
 }
 $new = new TBO();
-$inp_arr = ["CountryCode"=>["value"=>["value"=>'AE',"attr"=>["vu"=>'ddd']]]];
+//$inp_arr = ["CountryCode"=>["value"=>["value"=>'AE',"attr"=>["vu"=>'ddd']]]];
 //print_r($new->DestinationCityList($inp_arr));
 //print_r($new->TopDestinations());
-print_r($new->CountryList());
+//print_r($new->CountryList());
 ///****************print_r($new->HotelCodeList());
+$inp_arr = [
+    "CheckInDate"=>[
+        "value"=>"2015-10-25T00:00:00.000+05:00"
+    ],
+    "CheckOutDate"=>[
+        "value"=>"2015-10-26T00:00:00.000+05:00"
+    ],
+    "CountryName"=>[
+        "value"=>"United Arab Emirates"
+    ],
+    "CityName"=>[
+        "value"=>"Dubai"
+    ],
+    "CityId"=>[
+        "value"=>"25921"
+    ],
+    "IsNearBySearchAllowed"=>[
+        "value"=>'false'
+    ],
+    "NoOfRooms"=>[
+        "value"=>1
+    ],
+    "GuestNationality"=>[
+        "value"=>"IN"
+    ],
+    "RoomGuests"=>[
+        "value"=>[
+            "RoomGuest"=>[
+                "attr"=>[
+                    "AdultCount"=>1,
+                    "ChildCount"=> 0
+                ]
+            ]
+        ]
+    ],
+    "ResultCount" => [
+        "value" => 0
+    ],
+    "Filters" => [
+        "value" => [
+            "StarRating" =>[
+                "value"=>"All"
+            ],
+            "OrderBy" =>[
+                "value"=>"PriceAsc"
+            ]
+        ]
+    ]
+];
 
-
+print_r($new->HotelSearch($inp_arr));
 
 
 
